@@ -1,0 +1,91 @@
+<div class="row">
+    <div class="col-md-12">
+    <ul class="nav nav-tabs nav-stacked">
+        {% for pp in poll %}
+        {% if pp.max_count > pp.counts %}
+        <li><a href="#" class="" onclick="GetPollPerson({{ pp.id }})" data-toggle="modal" data-target="#basicModal">{{ pp.name }}</a></li>
+        {% else %}
+        <li class="active"><a href="#"  onclick="GetPollPersonClose({{ pp.id }})" data-toggle="modal" data-target="#basicModal">{{ pp.name }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    </div>
+</div>
+
+<div class="modal fade" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+  <div class="modal-dialog">
+ <div class="modal-content">
+ <div class="modal-header">
+ <h4 class="modal-title" id="myModalLabel">Проголосуйте за участника </h4>
+ <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+ <span aria-hidden="true">×</span>
+ </button>
+ </div>
+ <div class="modal-body">
+    <table>
+        <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>ФОТО</th>
+            <th>Проголосовать</th>
+        </tr>
+        </thead>
+        <tbody id="persons">
+
+        </tbody>
+    </table>
+     <ul id="detail" class="">
+         
+     </ul>
+
+ </div>
+ <div class="modal-footer">
+ <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+ </div>
+ </div>
+  </div>
+</div>
+
+<script>
+    function ExcellCreate(ID) {
+        $.get("/ajax/createxlsx/"+ID+"/", function(data) {
+        var path = location.href
+        path = path.replace('#','')
+        console.log(path+data.file);
+        window.open(path+data.file);
+        })
+    }
+    function GetPollPerson(ID) {
+        $.get("/ajax/get_poll_person/"+ID+"/", function(data) {
+            var mod = $("#persons")
+            mod.empty();
+            data.forEach(function(element) {
+               var tb = `<tr><td>${element.fio}</td><td><image width="100" src="/${element.foto}"></td><td><a href="#" onclick="AddVoitePerson(${element.pid})">Проголосовать</a></td></tr>`
+               mod.append(tb);
+            });
+        });
+    };
+    function GetPollPersonClose(ID) {
+        $.get("/ajax/get_poll_person_close/"+ID+"/", function(data) {
+            var mod = $("#persons")
+            var det = $("#detail")
+            var pp = 0;
+            mod.empty();
+            det.empty();
+            data.forEach(function(element) {
+               var tb = `<tr><td>${element.fio}</td><td><image width="100" src="/${element.foto}"></td><td>${element.count}</td></tr>`
+               mod.append(tb);
+               pp = element.polls;
+            });
+            det.append(`<li class=""><button type="button" onclick="ExcellCreate(${pp})" class="btn btn-default">Detail</button></li>`)
+        });
+    };
+    function AddVoitePerson(ID) {
+        $.get("/ajax/addvote/"+ID+"/", function(data) {
+            console.log(data);
+        });
+    }
+;
+
+</script>
